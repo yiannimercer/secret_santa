@@ -66,8 +66,6 @@ def secret_santa(participants_dict):
                 receivers.remove(receiver)
     return result     
 
-
-
 def email_participants(people_dictionary, partners_list, path_to_template):
     """Email each participant who they have for Secret Santa
 
