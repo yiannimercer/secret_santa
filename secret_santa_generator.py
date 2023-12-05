@@ -6,6 +6,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+
 def read_ss_list(file_name):
     """Read the Secret Santa Participants Text File (System Argument in main())
 
@@ -28,6 +29,7 @@ def read_ss_list(file_name):
     
     # RETURN PEOPLE_DICTIONARY
     return people_dict
+
 
 def secret_santa(participants_dict):
     """Generate partners for Secret Santa
@@ -64,18 +66,19 @@ def secret_santa(participants_dict):
                 result.append(tuple([giver, receiver]))
                 # Remove the reciever from the list
                 receivers.remove(receiver)
-    return result     
+    return result
 
-def email_participants(people_dictionary, partners_list, path_to_template):
+
+def email_participants(people_dictionary, partners_list, email_subject):
     """Email each participant who they have for Secret Santa
 
     Args:
         people_dictionary [dict]: Python dictionary with each item being a name : email key-value pair
         partners_list [list]: List of tuples, with each tuple representing the partners for Secret Santa 
-        path_to_template [str]: File name/path to the templated body of the email to be sent -- placeholders should be marked with {}
+        email_subject [str]: The subject of the email being sent
     """
     # READ IN THE EMAIL TEMPLATE
-    ss_template = open(path_to_template).read()
+    ss_template = open('secret_santa_template.txt').read()
     
     # ITERATE THROUGH PARTNER LIST AND SEND EMAILS
     for person1, person2 in partners_list:
@@ -92,7 +95,7 @@ def email_participants(people_dictionary, partners_list, path_to_template):
         message = MIMEMultipart()
         message['From'] = sender_email # MY EMAIL ADDRESS | FROM ME
         message['To'] =  people_dictionary[person1] # RECEIVER OF EMAIL | TO YOU
-        message['Subject'] = 'Secret Santa 2022' # SUBJECT OF THE EMAIL
+        message['Subject'] = email_subject # SUBJECT OF THE EMAIL
         
         # SET THE BODY OF THE EMAIL
         message.attach(MIMEText(ss_filled, 'plain'))
@@ -105,20 +108,4 @@ def email_participants(people_dictionary, partners_list, path_to_template):
         session.login(sender_email, sender_pass)
         text = message.as_string()
         session.sendmail(sender_email, people_dictionary[person1], text)
-        session.quit() 
-           
-if __name__ == "__main__":
-    approval_status = "NOT APPROVED"
-    people_email_dict = None
-    partners = None
-    while approval_status == "NOT APPROVED":
-        people_email_dict = read_ss_list(str(sys.argv[1]))
-        partners = secret_santa(people_email_dict)
-        for name in partners:
-            print(name)
-        approval = input("PLEASE APPROVE THE ABOVE SECRET SANTA PAIRINGS: ")
-        if approval == 'APPROVED':
-            email_participants(people_email_dict, partners, "secret_santa_template.txt")
-            approval_status = "APPROVED"
-        else:
-            approval_status = "NOT APPROVED"
+        session.quit()
