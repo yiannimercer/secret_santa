@@ -2,7 +2,8 @@
 
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from secret_santa_generator import read_ss_list, secret_santa, email_participants
+from secret_santa_generator import read_ss_list, secret_santa, email_participants, read_restrictions
+
 
 def browse_file(entry):
     filename = filedialog.askopenfilename(initialdir="/", title="Select a File", filetypes=(("Text files", "*.txt*"), ("all files", "*.*")))
@@ -16,11 +17,12 @@ def generate_pairings():
         return
     
     people_email_dict = read_ss_list(file_name)
-    partners = secret_santa(people_email_dict)
+    restrictions = read_restrictions('restrictions.txt') 
+    partners = secret_santa(people_email_dict, restrictions)
 
     result_text.delete("1.0", tk.END)
     for pair in partners:
-        result_text.insert(tk.END, f"{pair[0]} -> {pair[1]}\n")
+        result_text.insert(tk.END, f"{pair[1]} -> {pair[0]}\n")
 
 def send_emails():
     people_email_dict = read_ss_list(participants_entry.get())
@@ -29,8 +31,8 @@ def send_emails():
     if not email_subject:
         messagebox.showerror("Error", "Please enter an email subject.")
         return
-
-    email_participants(people_email_dict, secret_santa(people_email_dict), email_subject)
+    restrictions = read_restrictions('restrictions.txt')
+    email_participants(people_email_dict, secret_santa(people_email_dict, restrictions), email_subject)
     messagebox.showinfo("Success", "Emails sent successfully!")
 
 # Tkinter GUI

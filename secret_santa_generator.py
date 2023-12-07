@@ -31,16 +31,17 @@ def read_ss_list(file_name):
     return people_dict
 
 
-def secret_santa(participants_dict):
-    """Generate partners for Secret Santa
+def secret_santa(participants_dict, restrictions_set):
+    """
+    Generate partners for Secret Santa ensuring certain pairs are not matched together.
 
     Args:
         participants_dict [dict]: Python dictionary of people participating in Secret Santa with names as keys and emails as values
+        restrictions_set [set]: A set of tuples containing pairs of names that cannot be paired together
 
     Returns:
         list: Returns a list of tuples, with each tuple representing the partners for Secret Santa
     """
-    # GET NAMES OF EVERYONE INVOLVED
     names = list(participants_dict.keys())
     result = []
     restart = True
@@ -51,22 +52,35 @@ def secret_santa(participants_dict):
 
         for i in range(len(names)):
             giver = names[i]
-            # Pick a random reciever
-            receiver = random.choice(receivers)
+            possible_receivers = [receiver for receiver in receivers if receiver != giver and (giver, receiver) not in restrictions_set and (receiver, giver) not in restrictions_set]
 
-            # If we've got to the last giver and its the same as the reciever, restart the generation
-            if (giver == receiver and i == (len(names) - 1)):
+            if not possible_receivers:
                 restart = True
                 break
-            else:
-                # Ensure the giver and reciever are not the same, and they are not in the excludes list
-                while (receiver == giver):
-                    receiver = random.choice(receivers)
-                # Add result to array
-                result.append(tuple([giver, receiver]))
-                # Remove the reciever from the list
-                receivers.remove(receiver)
+
+            receiver = random.choice(possible_receivers)
+            result.append((giver, receiver))
+            receivers.remove(receiver)
+
     return result
+
+
+def read_restrictions(file_name):
+    """Read the restrictions for pairings from a text file.
+
+    Args:
+        file_name [str]: file path/name of the text file that contains restricted pairings
+
+    Returns:
+        set of tuples: A set of tuples, each containing a pair of names that cannot be paired together
+    """
+    restrictions = set()
+    with open(file_name, 'r') as file:
+        for line in file:
+            pair = tuple(line.strip().split(','))
+            restrictions.add(pair)
+    return restrictions
+
 
 
 def email_participants(people_dictionary, partners_list, email_subject):
